@@ -3,7 +3,7 @@ const { Client, GatewayIntentBits, REST, Routes } = require('discord.js');
 const express = require('express');
 const { startJokenpo } = require('./games/jokenpo');
 const { startVelha } = require('./games/velha');
-const { startCidadeDorme } = require('./games/cidadeDorme'); // NOVO
+const { startCidadeDorme } = require('./games/cidadeDorme');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] });
 
@@ -43,7 +43,7 @@ client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
   if (interaction.commandName === 'jokenpo') await startJokenpo(interaction);
   if (interaction.commandName === 'velha') await startVelha(interaction);
-  if (interaction.commandName === 'cidadedorme') await startCidadeDorme(interaction); // NOVO
+  if (interaction.commandName === 'cidadedorme') await startCidadeDorme(interaction);
 });
 
 client.login(process.env.TOKEN);
