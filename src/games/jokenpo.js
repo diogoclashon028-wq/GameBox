@@ -6,7 +6,7 @@ async function startJokenpo(interaction) {
   const userId = interaction.user.id;
 
   if (roomManager.hasGame(channelId)) {
-    return interaction.reply({ content: "❌ Já existe um jogo rodando neste chat. Aguarde ou use outro canal!", ephemeral: true });
+    return interaction.reply({ content: "❌ Já existe um jogo rodando neste chat. Aguarde ele terminar!", ephemeral: true });
   }
 
   roomManager.createRoom(channelId, 'jokenpo', [userId]);
