@@ -7,7 +7,7 @@ async function startVelha(interaction) {
   const p2 = interaction.options.getUser('oponente');
 
   if (!p2 || p2.bot || p1.id === p2.id) {
-    return interaction.reply({ content: "❌ Mencione um oponente válido (que não seja você mesmo ou um bot).", ephemeral: true });
+    return interaction.reply({ content: "❌ Mencione um amigo real para jogar com você.", ephemeral: true });
   }
 
   if (roomManager.hasGame(channelId)) {
@@ -62,7 +62,7 @@ async function startVelha(interaction) {
 
   collector.on('collect', async i => {
     if (i.user.id !== turn) {
-      return i.reply({ content: "👉 Não é a sua vez!", ephemeral: true });
+      return i.reply({ content: "👉 Não é o seu turno ainda!", ephemeral: true });
     }
 
     const index = parseInt(i.customId.split('_')[1]);
@@ -71,7 +71,14 @@ async function startVelha(interaction) {
     const win = checkWin();
     if (win) {
       embed.setDescription(win === 'T' ? "Empate! Deu velha 👵" : `🎉 Vitória de <@${turn}>!`);
-      await i.update({ embeds: [embed], components: makeGrid().map(r => ActionRowBuilder.from(r).components.forEach(b => b.setDisabled(true)) || r) });
+      
+      // Desativa todos os botões no final
+      const finalGrid = makeGrid().map(row => {
+        row.components.forEach(btn => btn.setDisabled(true));
+        return row;
+      });
+
+      await i.update({ embeds: [embed], components: finalGrid });
       return collector.stop();
     }
 
@@ -84,4 +91,3 @@ async function startVelha(interaction) {
 }
 
 module.exports = { startVelha };
-
