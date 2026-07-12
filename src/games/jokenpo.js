@@ -6,7 +6,7 @@ async function startJokenpo(interaction) {
   const userId = interaction.user.id;
 
   if (roomManager.hasGame(channelId)) {
-    return interaction.reply({ content: "❌ Já existe um jogo rodando neste chat. Aguarde ele terminar!", ephemeral: true });
+    return interaction.reply({ content: "❌ Já existe um jogo rodando neste chat.", ephemeral: true });
   }
 
   roomManager.createRoom(channelId, 'jokenpo', [userId]);
@@ -14,8 +14,7 @@ async function startJokenpo(interaction) {
   const embed = new EmbedBuilder()
     .setTitle("✊ Jokenpô Janela Virtual ✌️")
     .setDescription("Escolha sua jogada nos botões abaixo!")
-    .setColor("#5865F2")
-    .setFooter({ text: "Você tem 30 segundos para jogar." });
+    .setColor("#5865F2");
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId('jk_pedra').setLabel('Pedra ✊').setStyle(ButtonStyle.Primary),
@@ -50,8 +49,8 @@ async function startJokenpo(interaction) {
     const format = (id) => id.replace('jk_', '').toUpperCase();
 
     const endEmbed = new EmbedBuilder()
-      .setTitle("🏁 Resultado do Jokenpô")
-      .setDescription(`Você escolheu: **${format(userChoice)}**\nBot escolheu: **${format(botChoice)}**\n\n**${result}**`)
+      .setTitle("🏁 Resultado")
+      .setDescription(`Você: **${format(userChoice)}**\nBot: **${format(botChoice)}**\n\n**${result}**`)
       .setColor("#2F3136");
 
     await i.update({ embeds: [endEmbed], components: [] });
