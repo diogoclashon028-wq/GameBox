@@ -1,5 +1,5 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
-const roomManager = require('../roomManager');
+const roomManager = require('../roomManager.js');
 
 async function startJokenpo(interaction) {
   const channelId = interaction.channelId;
