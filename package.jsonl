@@ -1,7 +1,7 @@
 {
   "name": "bot-minigames-discord",
   "version": "1.0.0",
-  "description": "Bot de minigames com janelas virtuais",
+  "description": "Bot de minigames com janelas virtuais no chat",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js"
@@ -12,4 +12,3 @@
     "express": "^4.19.2"
   }
 }
-
