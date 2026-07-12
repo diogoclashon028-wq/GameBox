@@ -1,5 +1,5 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
-const roomManager = require('../roomManager');
+const roomManager = require('../roomManager.js');
 
 async function startVelha(interaction) {
   const channelId = interaction.channelId;
@@ -53,22 +53,18 @@ async function startVelha(interaction) {
 
   function botMove() {
     const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-    
-    // 1. Tentar ganhar
     for (let line of lines) {
       const cells = line.map(idx => board[idx]);
       if (cells.filter(c => c === 'O').length === 2 && cells.filter(c => c === null).length === 1) {
         return line[cells.indexOf(null)];
       }
     }
-    // 2. Bloquear jogador
     for (let line of lines) {
       const cells = line.map(idx => board[idx]);
       if (cells.filter(c => c === 'X').length === 2 && cells.filter(c => c === null).length === 1) {
         return line[cells.indexOf(null)];
       }
     }
-    // 3. Pegar centro ou aleatório
     if (board[4] === null) return 4;
     const empties = board.map((c, idx) => c === null ? idx : null).filter(v => v !== null);
     return empties[Math.floor(Math.random() * empties.length)];
@@ -96,7 +92,6 @@ async function startVelha(interaction) {
       return collector.stop();
     }
 
-    // Avançar rodada
     round++;
     board = Array(9).fill(null);
     turn = p1.id;
@@ -135,7 +130,6 @@ async function startVelha(interaction) {
     }
 
     if (isBot) {
-      // Turno da IA
       const move = botMove();
       if (move !== undefined) board[move] = 'O';
 
