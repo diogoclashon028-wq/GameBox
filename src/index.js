@@ -1,41 +1,39 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, REST, Routes, ApplicationCommandOptionType } = require('discord.js');
+const { Client, GatewayIntentBits, REST, Routes } = require('discord.js');
 const express = require('express');
 const { startJokenpo } = require('./games/jokenpo');
 const { startVelha } = require('./games/velha');
+const { startCidadeDorme } = require('./games/cidadeDorme'); // NOVO
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] });
 
-// 🚪 Mantém o Render acordado
 const app = express();
-app.get('/', (req, res) => res.send('Bot de Minigames Online! 🎮'));
-app.listen(process.env.PORT || 3000, () => console.log('Servidor HTTP do Render pronto.'));
+app.get('/', (req, res) => res.send('Online!'));
+app.listen(process.env.PORT || 3000);
 
 const commands = [
   {
     name: 'jokenpo',
-    description: 'Abre uma janela de Jokenpô contra o bot.'
+    description: 'Desafie um amigo para uma partida de Jokenpô (Melhor de 3).',
+    options: [{ name: 'oponente', type: 6, description: 'Quem você quer desafiar?', required: true }]
   },
   {
     name: 'velha',
-    description: 'Desafie alguém para um jogo da velha.',
-    options: [
-      {
-        name: 'oponente',
-        type: ApplicationCommandOptionType.User,
-        description: 'Quem você quer desafiar?',
-        required: true
-      }
-    ]
+    description: 'Jogue Jogo da Velha contra um amigo ou escolha o Bot.',
+    options: [{ name: 'oponente', type: 6, description: 'Escolha um amigo ou o próprio Bot para jogar solo.', required: true }]
+  },
+  {
+    name: 'cidadedorme',
+    description: 'Inicia uma partida temática de Cidade Dorme (Super Sus).'
   }
 ];
 
 client.once('ready', async () => {
-  console.log(`Logado como ${client.user.tag}!`);
+  console.log(`Bot online: ${client.user.tag}`);
   const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
   try {
     await rest.put(Routes.applicationCommands(client.user.id), { body: commands });
-    console.log('Slash Commands registrados globais!');
+    console.log('Todos os comandos registrados!');
   } catch (error) {
     console.error(error);
   }
@@ -43,13 +41,9 @@ client.once('ready', async () => {
 
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
-
-  if (interaction.commandName === 'jokenpo') {
-    await startJokenpo(interaction);
-  }
-  if (interaction.commandName === 'velha') {
-    await startVelha(interaction);
-  }
+  if (interaction.commandName === 'jokenpo') await startJokenpo(interaction);
+  if (interaction.commandName === 'velha') await startVelha(interaction);
+  if (interaction.commandName === 'cidadedorme') await startCidadeDorme(interaction); // NOVO
 });
 
 client.login(process.env.TOKEN);
