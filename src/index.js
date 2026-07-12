@@ -1,9 +1,15 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits, REST, Routes } = require('discord.js');
 const express = require('express');
+
+// Importações dos Jogos
 const { startJokenpo } = require('./games/jokenpo');
 const { startVelha } = require('./games/velha');
 const { startCidadeDorme } = require('./games/cidadeDorme');
+const { startAkinator } = require('./games/akinator');
+const { startMines } = require('./games/mines');
+const { startBlackjack } = require('./games/blackjack');
+const { startGenio } = require('./games/genio');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] });
 
@@ -14,17 +20,33 @@ app.listen(process.env.PORT || 3000);
 const commands = [
   {
     name: 'jokenpo',
-    description: 'Desafie um amigo para uma partida de Jokenpô (Melhor de 3).',
+    description: 'Partida de Jokenpô (Melhor de 3).',
     options: [{ name: 'oponente', type: 6, description: 'Quem você quer desafiar?', required: true }]
   },
   {
     name: 'velha',
-    description: 'Jogue Jogo da Velha contra um amigo ou escolha o Bot.',
-    options: [{ name: 'oponente', type: 6, description: 'Escolha um amigo ou o próprio Bot para jogar solo.', required: true }]
+    description: 'Jogo da Velha contra amigo ou Bot.',
+    options: [{ name: 'oponente', type: 6, description: 'Seu oponente.', required: true }]
   },
   {
     name: 'cidadedorme',
     description: 'Inicia uma partida temática de Cidade Dorme (Super Sus).'
+  },
+  {
+    name: 'akinator',
+    description: 'O gênio tenta adivinhar o seu personagem.'
+  },
+  {
+    name: 'mines',
+    description: 'Campo Minado valendo diamantes no chat.'
+  },
+  {
+    name: 'blackjack',
+    description: 'Jogue baralho 21 contra a banca.'
+  },
+  {
+    name: 'genio',
+    description: 'Teste sua memória repetindo as cores do gênio.'
   }
 ];
 
@@ -33,7 +55,7 @@ client.once('ready', async () => {
   const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
   try {
     await rest.put(Routes.applicationCommands(client.user.id), { body: commands });
-    console.log('Todos os comandos registrados!');
+    console.log('Todos os 7 minigames registrados com sucesso!');
   } catch (error) {
     console.error(error);
   }
@@ -41,9 +63,16 @@ client.once('ready', async () => {
 
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
-  if (interaction.commandName === 'jokenpo') await startJokenpo(interaction);
-  if (interaction.commandName === 'velha') await startVelha(interaction);
-  if (interaction.commandName === 'cidadedorme') await startCidadeDorme(interaction);
+  const cmd = interaction.commandName;
+
+  if (cmd === 'jokenpo') await startJokenpo(interaction);
+  if (cmd === 'velha') await startVelha(interaction);
+  if (cmd === 'cidadedorme') await startCidadeDorme(interaction);
+  if (cmd === 'akinator') await startAkinator(interaction);
+  if (cmd === 'mines') await startMines(interaction);
+  if (cmd === 'blackjack') await startBlackjack(interaction);
+  if (cmd === 'genio') await startGenio(interaction);
 });
 
 client.login(process.env.TOKEN);
+    
