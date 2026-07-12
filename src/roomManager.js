@@ -1,21 +1,16 @@
 const activeRooms = new Map();
 
-class RoomManager {
-  hasGame(channelId) {
-    return activeRooms.has(channelId);
-  }
-
-  createRoom(channelId, gameName, players) {
-    activeRooms.set(channelId, {
-      game: gameName,
-      players: players,
-      createdAt: Date.now()
-    });
-  }
-
-  destroyRoom(channelId) {
-    activeRooms.delete(channelId);
-  }
+function createRoom(channelId, gameType, players) {
+  activeRooms.set(channelId, { gameType, players });
 }
 
-module.exports = new RoomManager();
+function hasGame(channelId) {
+  return activeRooms.has(channelId);
+}
+
+function destroyRoom(channelId) {
+  activeRooms.delete(channelId);
+}
+
+module.exports = { createRoom, hasGame, destroyRoom };
+
