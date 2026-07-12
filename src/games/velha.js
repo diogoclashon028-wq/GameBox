@@ -6,16 +6,19 @@ async function startVelha(interaction) {
   const p1 = interaction.user;
   const p2 = interaction.options.getUser('oponente');
 
-  if (!p2 || p2.bot || p1.id === p2.id) {
+  if (!p2 || p1.id === p2.id) {
     return interaction.reply({ content: "❌ Oponente inválido.", ephemeral: true });
   }
 
   if (roomManager.hasGame(channelId)) {
-    return interaction.reply({ content: "❌ Chat ocupado.", ephemeral: true });
+    return interaction.reply({ content: "❌ Este chat está ocupado por outro jogo.", ephemeral: true });
   }
 
+  const isBot = p2.bot;
   roomManager.createRoom(channelId, 'velha', [p1.id, p2.id]);
 
+  let scores = { [p1.id]: 0, [p2.id]: 0 };
+  let round = 1;
   let board = Array(9).fill(null);
   let turn = p1.id;
 
@@ -48,16 +51,74 @@ async function startVelha(interaction) {
     return null;
   }
 
+  function botMove() {
+    const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    
+    // 1. Tentar ganhar
+    for (let line of lines) {
+      const cells = line.map(idx => board[idx]);
+      if (cells.filter(c => c === 'O').length === 2 && cells.filter(c => c === null).length === 1) {
+        return line[cells.indexOf(null)];
+      }
+    }
+    // 2. Bloquear jogador
+    for (let line of lines) {
+      const cells = line.map(idx => board[idx]);
+      if (cells.filter(c => c === 'X').length === 2 && cells.filter(c => c === null).length === 1) {
+        return line[cells.indexOf(null)];
+      }
+    }
+    // 3. Pegar centro ou aleatório
+    if (board[4] === null) return 4;
+    const empties = board.map((c, idx) => c === null ? idx : null).filter(v => v !== null);
+    return empties[Math.floor(Math.random() * empties.length)];
+  }
+
+  async function handleEndRound(win, i) {
+    let roundText = "";
+    if (win === 'T') {
+      roundText = "👵 A rodada deu empate!";
+    } else {
+      const roundWinner = win === 'X' ? p1.id : p2.id;
+      scores[roundWinner]++;
+      roundText = `🎉 <@${roundWinner}> ganhou a Rodada ${round}!`;
+    }
+
+    if (scores[p1.id] === 2 || scores[p2.id] === 2) {
+      const matchWinner = scores[p1.id] === 2 ? p1.id : p2.id;
+      const finalEmbed = new EmbedBuilder()
+        .setTitle("🏁 FIM DA PARTIDA!")
+        .setDescription(`🏆 **🥇 <@${matchWinner}> VENCEU A MELHOR DE 3!** 🥇\n\n**Placar Final:**\n<@${p1.id}>: ${scores[p1.id]}\n<@${p2.id}>: ${scores[p2.id]}`)
+        .setColor("#2ECC71");
+
+      const finalGrid = makeGrid().map(r => { r.components.forEach(b => b.setDisabled(true)); return r; });
+      await i.update({ embeds: [finalEmbed], components: finalGrid });
+      return collector.stop();
+    }
+
+    // Avançar rodada
+    round++;
+    board = Array(9).fill(null);
+    turn = p1.id;
+
+    const nextEmbed = new EmbedBuilder()
+      .setTitle("❌ Jogo da Velha ⭕")
+      .setDescription(`${roundText}\n\n**Placar:**\n<@${p1.id}>: ${scores[p1.id]}\n<@${p2.id}>: ${scores[p2.id]}\n\n**RODADA ${round}**\nTurno de: <@${turn}>`)
+      .setColor("#5865F2");
+
+    await i.update({ embeds: [nextEmbed], components: makeGrid() });
+  }
+
   const embed = new EmbedBuilder()
     .setTitle("❌ Jogo da Velha ⭕")
-    .setDescription(`Turno de: <@${turn}>`)
+    .setDescription(`**RODADA 1**\n<@${p1.id}> VS <@${p2.id}>\n\nTurno de: <@${turn}>`)
     .setColor("#5865F2");
 
   const response = await interaction.reply({ embeds: [embed], components: makeGrid(), fetchReply: true });
 
   const collector = response.createMessageComponentCollector({
-    filter: i => i.user.id === p1.id || i.user.id === p2.id,
-    time: 60000
+    filter: i => i.user.id === p1.id || (i.user.id === p2.id && !isBot),
+    time: 180000
   });
 
   collector.on('collect', async i => {
@@ -66,21 +127,28 @@ async function startVelha(interaction) {
     }
 
     const index = parseInt(i.customId.split('_')[1]);
-    board[index] = turn === p1.id ? 'X' : 'O';
+    board[index] = 'X';
 
-    const win = checkWin();
+    let win = checkWin();
     if (win) {
-      embed.setDescription(win === 'T' ? "Empate!" : `🎉 Vitória de <@${turn}>!`);
-      const finalGrid = makeGrid().map(row => {
-        row.components.forEach(btn => btn.setDisabled(true));
-        return row;
-      });
-      await i.update({ embeds: [embed], components: finalGrid });
-      return collector.stop();
+      return await handleEndRound(win, i);
     }
 
-    turn = turn === p1.id ? p2.id : p1.id;
-    embed.setDescription(`Turno de: <@${turn}>`);
+    if (isBot) {
+      // Turno da IA
+      const move = botMove();
+      if (move !== undefined) board[move] = 'O';
+
+      win = checkWin();
+      if (win) {
+        return await handleEndRound(win, i);
+      }
+      turn = p1.id;
+    } else {
+      turn = p2.id;
+    }
+
+    embed.setDescription(`**RODADA ${round}**\n**Placar:**\n<@${p1.id}>: ${scores[p1.id]}\n<@${p2.id}>: ${scores[p2.id]}\n\nTurno de: <@${turn}>`);
     await i.update({ embeds: [embed], components: makeGrid() });
   });
 
