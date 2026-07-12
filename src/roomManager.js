@@ -13,4 +13,3 @@ function destroyRoom(channelId) {
 }
 
 module.exports = { createRoom, hasGame, destroyRoom };
-
