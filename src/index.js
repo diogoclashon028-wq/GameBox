@@ -2,7 +2,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, REST, Routes } = require('discord.js');
 const express = require('express');
 
-// Importações dos Jogos
+// Importações dos Jogos (Alinhados com a pasta real no seu GitHub)
 const { startJokenpo } = require('./games/jokenpo');
 const { startVelha } = require('./games/velha');
 const { startCidadeDorme } = require('./games/cidadeDorme');
@@ -75,4 +75,3 @@ client.on('interactionCreate', async interaction => {
 });
 
 client.login(process.env.TOKEN);
-    
