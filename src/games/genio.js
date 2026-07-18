@@ -1,5 +1,5 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
-const roomManager = require('../roomManager.js');
+const roomManager = require('../roommanager.js'); // Alterado para minúsculo
 
 async function startGenio(interaction) {
   const channelId = interaction.channelId;
@@ -52,4 +52,3 @@ async function startGenio(interaction) {
 }
 
 module.exports = { startGenio };
-
