@@ -1,5 +1,5 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, StringSelectMenuBuilder } = require('discord.js');
-const roomManager = require('../roommanager.js'); // Alterado para minúsculo
+const roomManager = require('../roommanager.js'); // Caminho corrigido
 
 async function startCidadeDorme(interaction) {
   const channelId = interaction.channelId;
