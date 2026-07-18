@@ -1,5 +1,5 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
-const roomManager = require('../roommanager.js'); // Alterado para minúsculo
+const roomManager = require('../roommanager.js'); // Caminho corrigido
 
 async function startBlackjack(interaction) {
   const channelId = interaction.channelId;
@@ -19,7 +19,7 @@ async function startBlackjack(interaction) {
     .setColor("#1ABC9C");
 
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('bj_hit').setLabel('Pedra Carta 🃏').setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId('bj_hit').setLabel('Pedir Carta 🃏').setStyle(ButtonStyle.Primary),
     new ButtonBuilder().setCustomId('bj_stand').setLabel('Parar 🛑').setStyle(ButtonStyle.Danger)
   );
 
