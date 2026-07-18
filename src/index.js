@@ -2,7 +2,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, REST, Routes } = require('discord.js');
 const express = require('express');
 
-// Importações dos Jogos (Alinhados com a pasta real no seu GitHub)
+// Importações dos Jogos (Tudo minúsculo para não dar erro no Linux/Railway)
 const { startJokenpo } = require('./games/jokenpo');
 const { startVelha } = require('./games/velha');
 const { startCidadeDorme } = require('./games/cidadeDorme');
@@ -10,6 +10,10 @@ const { startAkinator } = require('./games/akinator');
 const { startMines } = require('./games/mines');
 const { startBlackjack } = require('./games/blackjack');
 const { startGenio } = require('./games/genio');
+// Descomente as linhas abaixo quando tiver os arquivos do Copilot
+// const { startBingo } = require('./games/bingo');
+// const { startTelefone } = require('./games/telefone');
+// const { startAdedonha } = require('./games/adedonha');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] });
 
@@ -17,36 +21,44 @@ const app = express();
 app.get('/', (req, res) => res.send('Online!'));
 app.listen(process.env.PORT || 3000);
 
+// Sistema de gerenciamento de jogos desativados por Servidor (Guild)
+const disabledGames = new Map();
+
 const commands = [
   {
     name: 'jokenpo',
-    description: 'Partida de Jokenpô (Melhor de 3).',
-    options: [{ name: 'oponente', type: 6, description: 'Quem você quer desafiar?', required: true }]
+    description: 'Partida de Jokenpô. Jogue contra um amigo ou contra o Bot!',
+    options: [{ name: 'oponente', type: 6, description: 'Deixe vazio para jogar contra o Bot.', required: false }]
   },
   {
     name: 'velha',
-    description: 'Jogo da Velha contra amigo ou Bot.',
-    options: [{ name: 'oponente', type: 6, description: 'Seu oponente.', required: true }]
+    description: 'Jogo da Velha. Jogue contra um amigo ou contra o Bot!',
+    options: [{ name: 'oponente', type: 6, description: 'Deixe vazio para jogar contra o Bot.', required: false }]
   },
+  { name: 'cidadedorme', description: 'Inicia uma partida temática de Cidade Dorme (Super Sus).' },
+  { name: 'akinator', description: 'O gênio tenta adivinhar o seu personagem.' },
+  { name: 'mines', description: 'Campo Minado valendo diamantes no chat.' },
+  { name: 'blackjack', description: 'Jogue baralho 21 contra a banca.' },
+  { name: 'genio', description: 'Teste sua memória repetindo as cores do gênio.' },
   {
-    name: 'cidadedorme',
-    description: 'Inicia uma partida temática de Cidade Dorme (Super Sus).'
-  },
-  {
-    name: 'akinator',
-    description: 'O gênio tenta adivinhar o seu personagem.'
-  },
-  {
-    name: 'mines',
-    description: 'Campo Minado valendo diamantes no chat.'
-  },
-  {
-    name: 'blackjack',
-    description: 'Jogue baralho 21 contra a banca.'
-  },
-  {
-    name: 'genio',
-    description: 'Teste sua memória repetindo as cores do gênio.'
+    name: 'togglegame',
+    description: '[MODERADOR] Ativa ou desativa um jogo neste servidor.',
+    default_member_permissions: '32', // Permissão de Gerenciar Servidor exigida
+    options: [{
+      name: 'jogo',
+      type: 3, // String
+      description: 'Qual jogo deseja ativar/desativar?',
+      required: true,
+      choices: [
+        { name: 'Jokenpô', value: 'jokenpo' },
+        { name: 'Jogo da Velha', value: 'velha' },
+        { name: 'Cidade Dorme', value: 'cidadedorme' },
+        { name: 'Akinator', value: 'akinator' },
+        { name: 'Mines', value: 'mines' },
+        { name: 'Blackjack', value: 'blackjack' },
+        { name: 'Gênio', value: 'genio' }
+      ]
+    }]
   }
 ];
 
@@ -55,7 +67,7 @@ client.once('ready', async () => {
   const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
   try {
     await rest.put(Routes.applicationCommands(client.user.id), { body: commands });
-    console.log('Todos os 7 minigames registrados com sucesso!');
+    console.log('Comandos registrados com sucesso!');
   } catch (error) {
     console.error(error);
   }
@@ -64,7 +76,29 @@ client.once('ready', async () => {
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
   const cmd = interaction.commandName;
+  const guildId = interaction.guildId;
 
+  // Lógica do comando de Moderador
+  if (cmd === 'togglegame') {
+    const jogo = interaction.options.getString('jogo');
+    if (!disabledGames.has(guildId)) disabledGames.set(guildId, new Set());
+    
+    const serverGames = disabledGames.get(guildId);
+    if (serverGames.has(jogo)) {
+      serverGames.delete(jogo);
+      return interaction.reply({ content: `✅ O jogo **${jogo}** foi **ATIVADO** neste servidor!`, ephemeral: true });
+    } else {
+      serverGames.add(jogo);
+      return interaction.reply({ content: `🚫 O jogo **${jogo}** foi **DESATIVADO** neste servidor!`, ephemeral: true });
+    }
+  }
+
+  // Verifica se o jogo está desativado antes de rodar
+  if (disabledGames.get(guildId)?.has(cmd)) {
+    return interaction.reply({ content: "❌ Este minigame foi desativado pelos moderadores neste servidor.", ephemeral: true });
+  }
+
+  // Execução dos jogos
   if (cmd === 'jokenpo') await startJokenpo(interaction);
   if (cmd === 'velha') await startVelha(interaction);
   if (cmd === 'cidadedorme') await startCidadeDorme(interaction);
