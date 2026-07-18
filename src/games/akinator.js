@@ -1,53 +1,51 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
-const roomManager = require('../roomManager.js');
+const roomManager = require('../roommanager.js'); // Alterado para minúsculo
 
 async function startAkinator(interaction) {
   const channelId = interaction.channelId;
   const userId = interaction.user.id;
 
-  if (roomManager.hasGame(channelId)) return interaction.reply({ content: "❌ Chat ocupado.", ephemeral: true });
+  if (roomManager.hasGame(channelId)) {
+    return interaction.reply({ content: "❌ Este chat já tem um jogo rodando.", ephemeral: true });
+  }
+
   roomManager.createRoom(channelId, 'akinator', [userId]);
 
-  let currentId = 1;
-  const tree = {
-    1: { q: "O seu personagem é real?", sim: 2, nao: 3 },
-    2: { q: "Ele nasceu no Brasil?", sim: 4, nao: 5 },
-    3: { q: "Ele é de um anime?", sim: 6, nao: 7 },
-    4: { q: "Ele joga ou jogava futebol?", sim: "Neymar Jr. ⚽", nao: "Silvio Santos 📺" },
-    5: { q: "Ele foi um presidente famoso?", sim: "Abraham Lincoln 🇺🇸", nao: "Cristiano Ronaldo 🇵🇹" },
-    6: { q: "Ele tem cabelo espetado?", sim: "Goku (Dragon Ball) 🐉", nao: "Naruto Uzumaki 🦊" },
-    7: { q: "Ele voa e usa uma capa?", sim: "Superman 🦸‍♂️", nao: "Batman 🦇" }
-  };
+  let step = 0;
+  const questions = [
+    "O seu personagem é real?",
+    "O seu personagem é um homem?",
+    "O seu personagem é de um anime?",
+    "O seu personagem luta ou tem superpoderes?",
+    "O seu personagem usa roupas azuis ou capa?"
+  ];
 
-  const makeRow = () => new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('ak_sim').setLabel('Sim ✅').setStyle(ButtonStyle.Success),
-    new ButtonBuilder().setCustomId('ak_nao').setLabel('Não ❌').setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('ak_sair').setLabel('Sair 🚪').setStyle(ButtonStyle.Secondary)
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('ak_sim').setLabel('Sim').setStyle(ButtonStyle.Success),
+    new ButtonBuilder().setCustomId('ak_nao').setLabel('Não').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId('ak_naosei').setLabel('Não Sei').setStyle(ButtonStyle.Secondary)
   );
 
-  const embed = new EmbedBuilder().setTitle("🔮 Akinator Super Inteligente 🧞‍♂️").setDescription(tree[currentId].q).setColor("#3498DB");
-  const response = await interaction.reply({ embeds: [embed], components: [makeRow()], fetchReply: true });
-  const collector = response.createMessageComponentCollector({ filter: i => i.user.id === userId, time: 90000 });
+  const embed = new EmbedBuilder()
+    .setTitle("🔮 Akinator Virtual 🧞‍♂️")
+    .setDescription(`**Pergunta 1:**\n${questions[0]}`)
+    .setColor("#3498DB");
+
+  const response = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
+  const collector = response.createMessageComponentCollector({ filter: i => i.user.id === userId, time: 60000 });
 
   collector.on('collect', async i => {
-    if (i.customId === 'ak_sair') {
-      embed.setDescription("🚪 Você saiu do jogo.");
+    step++;
+    if (step < questions.length) {
+      embed.setDescription(`**Pergunta ${step + 1}:**\n${questions[step]}`);
+      await i.update({ embeds: [embed] });
+    } else {
+      embed.setTitle("🤔 Palpite do Gênio!")
+        .setDescription("Pensei bem nas suas respostas...\n\nO seu personagem é o **Goku** ou o **Superman**! Acertei? 🧙‍♂️")
+        .setColor("#2ECC71");
       await i.update({ embeds: [embed], components: [] });
-      return collector.stop();
+      collector.stop();
     }
-
-    const answer = i.customId === 'ak_sim' ? 'sim' : 'nao';
-    const nextNode = tree[currentId][answer];
-
-    if (typeof nextNode === 'string') {
-      embed.setTitle("🧙‍♂️ O Gênio Adivinhou!").setDescription(`Pensei bem e o seu personagem é:\n\n✨ **${nextNode}** ✨`).setColor("#2ECC71");
-      await i.update({ embeds: [embed], components: [] });
-      return collector.stop();
-    }
-
-    currentId = nextNode;
-    embed.setDescription(tree[currentId].q);
-    await i.update({ embeds: [embed] });
   });
 
   collector.on('end', () => roomManager.destroyRoom(channelId));
