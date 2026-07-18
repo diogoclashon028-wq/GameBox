@@ -1,10 +1,10 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
-const roomManager = require('../roommanager.js'); 
+// IMPORTANTE: 'roomManager.js' com M maiúsculo para funcionar no Render
+const roomManager = require('../roomManager.js'); 
 
 async function startJokenpo(interaction) {
   const channelId = interaction.channelId;
   const p1 = interaction.user;
-  // Se não mandou oponente, o bot assume!
   const p2 = interaction.options.getUser('oponente') || interaction.client.user; 
   const isBot = p2.id === interaction.client.user.id;
 
@@ -36,7 +36,6 @@ async function startJokenpo(interaction) {
 
     choices[i.user.id] = i.customId;
     
-    // Se for contra o bot, o bot joga na mesma hora
     if (isBot && i.user.id === p1.id) {
       const opcoesBot = ['jk_pedra', 'jk_papel', 'jk_tesoura'];
       choices[p2.id] = opcoesBot[Math.floor(Math.random() * 3)];
