@@ -2,7 +2,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, REST, Routes } = require('discord.js');
 const express = require('express');
 
-// Importações dos Jogos (Tudo minúsculo para não dar erro no Linux/Railway)
+// Importações dos Jogos (Ajustadas com letras minúsculas padrão)
 const { startJokenpo } = require('./games/jokenpo');
 const { startVelha } = require('./games/velha');
 const { startCidadeDorme } = require('./games/cidadeDorme');
@@ -10,8 +10,10 @@ const { startAkinator } = require('./games/akinator');
 const { startMines } = require('./games/mines');
 const { startBlackjack } = require('./games/blackjack');
 const { startGenio } = require('./games/genio');
-// Descomente as linhas abaixo quando tiver os arquivos do Copilot
-// const { startBingo } = require('./games/bingo');
+
+// Se o Render continuar reclamando do Bingo, certifique-se se no GitHub está 'bingo' ou 'Bingo'
+const { startBingo } = require('./games/bingo'); 
+// Se tiver os outros comandos criados pelo Copilot, remova as barras '//' abaixo:
 // const { startTelefone } = require('./games/telefone');
 // const { startAdedonha } = require('./games/adedonha');
 
@@ -40,13 +42,14 @@ const commands = [
   { name: 'mines', description: 'Campo Minado valendo diamantes no chat.' },
   { name: 'blackjack', description: 'Jogue baralho 21 contra a banca.' },
   { name: 'genio', description: 'Teste sua memória repetindo as cores do gênio.' },
+  { name: 'bingo', description: 'Inicia uma rodada de Bingo no chat.' },
   {
     name: 'togglegame',
     description: '[MODERADOR] Ativa ou desativa um jogo neste servidor.',
     default_member_permissions: '32', // Permissão de Gerenciar Servidor exigida
     options: [{
       name: 'jogo',
-      type: 3, // String
+      type: 3,
       description: 'Qual jogo deseja ativar/desativar?',
       required: true,
       choices: [
@@ -56,7 +59,8 @@ const commands = [
         { name: 'Akinator', value: 'akinator' },
         { name: 'Mines', value: 'mines' },
         { name: 'Blackjack', value: 'blackjack' },
-        { name: 'Gênio', value: 'genio' }
+        { name: 'Gênio', value: 'genio' },
+        { name: 'Bingo', value: 'bingo' }
       ]
     }]
   }
@@ -78,11 +82,8 @@ client.on('interactionCreate', async interaction => {
   const cmd = interaction.commandName;
   const guildId = interaction.guildId;
 
-  // Lógica do comando de Moderador
   if (cmd === 'togglegame') {
-    const jogo = interaction.options.getString('jogo');
     if (!disabledGames.has(guildId)) disabledGames.set(guildId, new Set());
-    
     const serverGames = disabledGames.get(guildId);
     if (serverGames.has(jogo)) {
       serverGames.delete(jogo);
@@ -93,12 +94,10 @@ client.on('interactionCreate', async interaction => {
     }
   }
 
-  // Verifica se o jogo está desativado antes de rodar
   if (disabledGames.get(guildId)?.has(cmd)) {
     return interaction.reply({ content: "❌ Este minigame foi desativado pelos moderadores neste servidor.", ephemeral: true });
   }
 
-  // Execução dos jogos
   if (cmd === 'jokenpo') await startJokenpo(interaction);
   if (cmd === 'velha') await startVelha(interaction);
   if (cmd === 'cidadedorme') await startCidadeDorme(interaction);
@@ -106,6 +105,7 @@ client.on('interactionCreate', async interaction => {
   if (cmd === 'mines') await startMines(interaction);
   if (cmd === 'blackjack') await startBlackjack(interaction);
   if (cmd === 'genio') await startGenio(interaction);
+  if (cmd === 'bingo') await startBingo(interaction);
 });
 
 client.login(process.env.TOKEN);
