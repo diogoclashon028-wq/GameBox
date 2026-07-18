@@ -1,10 +1,10 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
-const roomManager = require('../roommanager.js'); 
+// IMPORTANTE: 'roomManager.js' com M maiúsculo para funcionar no Render
+const roomManager = require('../roomManager.js'); 
 
 async function startVelha(interaction) {
   const channelId = interaction.channelId;
   const p1 = interaction.user;
-  // Oponente padrão é o bot
   const p2 = interaction.options.getUser('oponente') || interaction.client.user; 
   const isBot = p2.id === interaction.client.user.id;
 
