@@ -1,5 +1,5 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
-const roomManager = require('../roomManager.js');
+const roomManager = require('../roommanager.js'); // Caminho corrigido
 
 async function startMines(interaction) {
   const channelId = interaction.channelId;
@@ -44,7 +44,7 @@ async function startMines(interaction) {
 
     if (board[idx] === '💣') {
       embed.setTitle("💥 EXPLODIU!").setDescription("Você clicou na bomba e perdeu tudo! 😭").setColor("#FF0000");
-      all = Array.from({length: 10}, (_, k) => k);
+      let all = Array.from({length: 10}, (_, k) => k);
       await i.update({ embeds: [embed], components: makeGrid(all) });
       return collector.stop();
     }
@@ -62,4 +62,3 @@ async function startMines(interaction) {
 }
 
 module.exports = { startMines };
-
