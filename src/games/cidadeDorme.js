@@ -1,5 +1,6 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, StringSelectMenuBuilder } = require('discord.js');
-const roomManager = require('../roommanager.js'); // Caminho corrigido
+// CORRIGIDO: M maiúsculo para funcionar no Render
+const roomManager = require('../roomManager.js'); 
 
 async function startCidadeDorme(interaction) {
   const channelId = interaction.channelId;
