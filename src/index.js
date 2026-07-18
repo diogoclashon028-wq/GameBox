@@ -2,7 +2,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, REST, Routes } = require('discord.js');
 const express = require('express');
 
-// Importações dos Jogos (Ajustadas com letras minúsculas padrão)
+// Importações dos Jogos
 const { startJokenpo } = require('./games/jokenpo');
 const { startVelha } = require('./games/velha');
 const { startCidadeDorme } = require('./games/cidadeDorme');
@@ -10,12 +10,7 @@ const { startAkinator } = require('./games/akinator');
 const { startMines } = require('./games/mines');
 const { startBlackjack } = require('./games/blackjack');
 const { startGenio } = require('./games/genio');
-
-// Se o Render continuar reclamando do Bingo, certifique-se se no GitHub está 'bingo' ou 'Bingo'
 const { startBingo } = require('./games/bingo'); 
-// Se tiver os outros comandos criados pelo Copilot, remova as barras '//' abaixo:
-// const { startTelefone } = require('./games/telefone');
-// const { startAdedonha } = require('./games/adedonha');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] });
 
@@ -82,9 +77,13 @@ client.on('interactionCreate', async interaction => {
   const cmd = interaction.commandName;
   const guildId = interaction.guildId;
 
+  // Lógica do comando de Moderador (CORRIGIDO: agora define a constante 'jogo')
   if (cmd === 'togglegame') {
+    const jogo = interaction.options.getString('jogo');
+    
     if (!disabledGames.has(guildId)) disabledGames.set(guildId, new Set());
     const serverGames = disabledGames.get(guildId);
+    
     if (serverGames.has(jogo)) {
       serverGames.delete(jogo);
       return interaction.reply({ content: `✅ O jogo **${jogo}** foi **ATIVADO** neste servidor!`, ephemeral: true });
@@ -94,10 +93,12 @@ client.on('interactionCreate', async interaction => {
     }
   }
 
+  // Verifica se o jogo está desativado antes de rodar
   if (disabledGames.get(guildId)?.has(cmd)) {
     return interaction.reply({ content: "❌ Este minigame foi desativado pelos moderadores neste servidor.", ephemeral: true });
   }
 
+  // Execução dos comandos
   if (cmd === 'jokenpo') await startJokenpo(interaction);
   if (cmd === 'velha') await startVelha(interaction);
   if (cmd === 'cidadedorme') await startCidadeDorme(interaction);
