@@ -10,7 +10,7 @@ const { startAkinator } = require('./games/akinator');
 const { startMines } = require('./games/mines');
 const { startBlackjack } = require('./games/blackjack');
 const { startGenio } = require('./games/genio');
-const { startBingo } = require('./games/bingo'); 
+const { startBingo } = require('./games/bingo'); // Importação do Bingo adicionada
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] });
 
@@ -37,7 +37,7 @@ const commands = [
   { name: 'mines', description: 'Campo Minado valendo diamantes no chat.' },
   { name: 'blackjack', description: 'Jogue baralho 21 contra a banca.' },
   { name: 'genio', description: 'Teste sua memória repetindo as cores do gênio.' },
-  { name: 'bingo', description: 'Inicia uma rodada de Bingo no chat.' },
+  { name: 'bingo', description: 'Inicia uma rodada de Bingo no chat.' }, // Comando do Bingo adicionado
   {
     name: 'togglegame',
     description: '[MODERADOR] Ativa ou desativa um jogo neste servidor.',
@@ -77,7 +77,7 @@ client.on('interactionCreate', async interaction => {
   const cmd = interaction.commandName;
   const guildId = interaction.guildId;
 
-  // Lógica do comando de Moderador (CORRIGIDO: agora define a constante 'jogo')
+  // Comando de Moderador
   if (cmd === 'togglegame') {
     const jogo = interaction.options.getString('jogo');
     
@@ -93,7 +93,7 @@ client.on('interactionCreate', async interaction => {
     }
   }
 
-  // Verifica se o jogo está desativado antes de rodar
+  // Verifica se o jogo está desativado no servidor
   if (disabledGames.get(guildId)?.has(cmd)) {
     return interaction.reply({ content: "❌ Este minigame foi desativado pelos moderadores neste servidor.", ephemeral: true });
   }
@@ -106,7 +106,7 @@ client.on('interactionCreate', async interaction => {
   if (cmd === 'mines') await startMines(interaction);
   if (cmd === 'blackjack') await startBlackjack(interaction);
   if (cmd === 'genio') await startGenio(interaction);
-  if (cmd === 'bingo') await startBingo(interaction);
+  if (cmd === 'bingo') await startBingo(interaction); // Execução do Bingo adicionada
 });
 
 client.login(process.env.TOKEN);
